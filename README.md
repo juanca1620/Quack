@@ -6,6 +6,7 @@ Integrantes
 - Soto
 - Quintero
 - Quiceno
+- Aguirre
 
 Introduccion
 
