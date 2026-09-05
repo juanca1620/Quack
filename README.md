@@ -6,7 +6,7 @@ Integrantes
 - Soto
 - Quintero
 - Quiceno
-
+- Aguirre
 Introduccion
 
 Para este proyecto escogimos como dominio los animales que ponen huevos,
