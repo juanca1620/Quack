@@ -1,0 +1,2 @@
+Q_numerico x = 42 @ 10
+
