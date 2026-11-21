@@ -1,19 +1,26 @@
 /* Programa de demostracion Quack
 : revisa el nido de Perry */
-Q_numerico temperatura = 17.5
+Q_numerico temperatura
+temperatura = -15.5
 Q_texto especie = "Perry"
 Q_numerico humedad = 45
 Q_booleano pone_huevos = verdadero
-Q_numerico promedio = (temperatura + 20.5) / 2
+Q_numerico promedio = (3 + 20.5) / 2
+kukukuku "hola"
 /* reglas que revisan
    el estado del nido */
-SI temperatura < 18 ENTONCES
+Q_booleano boleano = temperatura < 18
+SI boleano ENTONCES
     activar_incubadora
 SI humedad <= 20 O temperatura >= 32.8 ENTONCES
     activar_riego
 SI especie == "Perry" Y pone_huevos != falso ENTONCES
     clasificar_como_ornitorrinco_perry
 CLOK temperatura < 18 :
+    Q_texto hola = "hola"
+    Q_texto mensaje_bloque = "Subiendo temperatura en iteracion:"
     activar_incubadora
     temperatura = temperatura + 1
+
+kukukuku hola
 kukukuku "Revision del nido terminada"

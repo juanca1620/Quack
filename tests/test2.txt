@@ -1,0 +1,6 @@
+Q_numerico n = 5
+Q_numerico resultado = 1
+CLOK n > 1 :
+    resultado = resultado * n
+    n = n - 1
+kukukuku resultado

@@ -16,31 +16,10 @@ def mostrar_error(error: ErrorDeLenguaje, codigo: str):
         print(f"    {espacios}^")
 
 
-def modo_interactivo():
-    interprete = Interprete()
-    while True:
-        try:
-            linea = input("> ")
-        except (EOFError, KeyboardInterrupt):
-            print()
-            break
-
-        if not linea.strip():
-            continue
-        if linea.strip() in ("salir", "exit"):
-            break
-
-        try:
-            programa = Parser(tokenizar(linea)).programa()
-            interprete.ejecutar_programa(programa)
-        except ErrorDeLenguaje as e:
-            mostrar_error(e, linea)
-
-
 def main():
     if len(sys.argv) < 2:
-        modo_interactivo()
-        return
+
+        sys.exit(1)
 
     ruta = sys.argv[1]
     ver_arbol = "--arbol" in sys.argv[2:]

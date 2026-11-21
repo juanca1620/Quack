@@ -1,0 +1,4 @@
+Q_numerico n = 1
+CLOK n <= 5 :
+    kukukuku n * 3
+    n = n + 1

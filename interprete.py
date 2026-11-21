@@ -17,8 +17,6 @@ from arbol import (
     Programa,
 )
 
-# Qué tipos de Python acepta cada tipo de dato de Quack.
-# Se usa type(valor) y no isinstance() porque en Python isinstance(True, int) es True.
 ACEPTA = {
     "Q_numerico": (int, float),
     "Q_texto": (str,),
@@ -31,11 +29,8 @@ VALORES_POR_DEFECTO = {
     "Q_booleano": False,
 }
 
-MAX_ITERACIONES_CLOK = 100000
-
 
 class Entorno:
-    """Entorno anidado con referencia a su padre para manejar alcance de bloques."""
 
     def __init__(self, padre=None):
         self.valores = {}
@@ -139,7 +134,6 @@ class Interprete:
     def operar(self, izq, operador, der):
         op = operador.valor
 
-        # Conectores lógicos: Y, O
         if op in ("Y", "O"):
             if type(izq) is not bool or type(der) is not bool:
                 raise ErrorSemantico(
@@ -149,7 +143,6 @@ class Interprete:
                 )
             return (izq and der) if op == "Y" else (izq or der)
 
-        # Operaciones con textos (str)
         if type(izq) is str or type(der) is str:
             if op == "+" and type(izq) is str and type(der) is str:
                 return izq + der
@@ -159,7 +152,6 @@ class Interprete:
                 operador.columna,
             )
 
-        # No permitir aritmética con booleanos
         if type(izq) is bool or type(der) is bool:
             raise ErrorSemantico(
                 f"no se puede usar '{op}' con booleanos",
@@ -167,7 +159,6 @@ class Interprete:
                 operador.columna,
             )
 
-        # Operaciones numéricas: +, -, *, /
         if op == "+":
             return izq + der
         if op == "-":
@@ -298,18 +289,5 @@ class Interprete:
                 self._ejecutar_bloque(nodo.sino)
 
         elif isinstance(nodo, BucleClok):
-            vueltas = 0
             while self.evaluar(nodo.condicion):
-                vueltas += 1
-                if vueltas > MAX_ITERACIONES_CLOK:
-                    linea_err = (
-                        nodo.condicion.operador.linea
-                        if hasattr(nodo.condicion, "operador")
-                        else 1
-                    )
-                    raise ErrorSemantico(
-                        f"el ciclo superó {MAX_ITERACIONES_CLOK} vueltas; ¿falta actualizar la variable de la condición?",
-                        linea_err,
-                        1,
-                    )
                 self._ejecutar_bloque(nodo.acciones)

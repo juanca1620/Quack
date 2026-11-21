@@ -1,26 +1,4 @@
-# Gramática en EBNF del lenguaje Quack:
-# programa             ::= instruccion* EOF
-# instruccion          ::= declaracion | asignacion | regla_si | bucle_clok | consola | comentario | ACCION
-# declaracion          ::= declaracion_booleano | declaracion_texto | declaracion_numerico
-# declaracion_booleano ::= "Q_booleano" IDENTIFICADOR ( "=" expresion_booleana )?
-# declaracion_texto    ::= "Q_texto" IDENTIFICADOR ( "=" expresion_texto )?
-# declaracion_numerico ::= "Q_numerico" IDENTIFICADOR ( "=" expresion_numerica )?
-# asignacion           ::= IDENTIFICADOR "=" expresion
-# regla_si             ::= "SI" expresion_booleana "ENTONCES" bloque_si ( "SINO" bloque_si )?
-# bucle_clok           ::= "CLOK" expresion_booleana ":" INDENT instruccion+ DEDENT
-# consola              ::= "kukukuku" expresion
-# comentario           ::= "kirikiki" expresion_texto
-# expresion_booleana   ::= termino_booleano ( "O" termino_booleano )*
-# termino_booleano     ::= factor_booleano ( "Y" factor_booleano )*
-# factor_booleano      ::= "!" factor_booleano | condicion
-# condicion            ::= expresion ( ( ">" | "<" | "=" | ">=" | "<=" | "==" | "!=" ) expresion )?
-# expresion_texto      ::= expresion
-# expresion_numerica   ::= expresion
-# expresion            ::= termino ( ( "+" | "-" ) termino )*
-# termino              ::= factor ( ( "*" | "/" ) factor )*
-# factor               ::= "-" factor | NUMERO | CADENA | BOOLEANO | IDENTIFICADOR | "(" expresion ")"
-
-from tokens import Token, TipoToken, ErrorSintactico
+from tokens import TipoToken, ErrorSintactico
 from arbol import (
     Numero,
     Variable,
@@ -78,11 +56,9 @@ class Parser:
             )
         return self.avanzar()
 
-    # <valor> ::= <numero> | <booleano> | <texto> | <identificador>
     def valor(self):
         return self.expresion()
 
-    # <condicion> ::= expresion ( OPERADOR_COMPARACION expresion )?
     def condicion(self):
         izq = self.expresion()
         t = self.actual()
@@ -92,7 +68,6 @@ class Parser:
             return Condicion(izq, operador, der)
         return izq
 
-    # factor_booleano ::= '!' factor_booleano | condicion
     def factor_booleano(self):
         t = self.actual()
         if t.tipo == TipoToken.NEGACION:
@@ -100,7 +75,6 @@ class Parser:
             return OperacionUnaria(operador, self.factor_booleano())
         return self.condicion()
 
-    # termino_booleano ::= factor_booleano ( 'Y' factor_booleano )*
     def termino_booleano(self):
         izq = self.factor_booleano()
         while self.actual().tipo == TipoToken.CONECTOR_Y:
@@ -109,7 +83,6 @@ class Parser:
             izq = OperacionBinaria(izq, conector, der)
         return izq
 
-    # expresion_booleana ::= termino_booleano ( 'O' termino_booleano )*
     def expresion_booleana(self):
         izq = self.termino_booleano()
         while self.actual().tipo == TipoToken.CONECTOR_O:
@@ -124,7 +97,6 @@ class Parser:
     def expresion_numerica(self):
         return self.expresion()
 
-    # factor ::= '-' factor | NUMERO | CADENA | BOOLEANO | IDENTIFICADOR | '(' expresion ')'
     def factor(self):
         t = self.actual()
         if t.tipo == TipoToken.OPERADOR and t.valor == "-":
@@ -139,9 +111,9 @@ class Parser:
         if t.tipo == TipoToken.IDENTIFICADOR:
             return Variable(self.avanzar())
         if t.tipo == TipoToken.PARENTESIS and t.valor == "(":
-            self.avanzar()  # '('
-            dentro = self.expresion_booleana()  # soporta expresiones aritméticas y lógicas entre ()
-            self.esperar(TipoToken.PARENTESIS, ")")  # ')'
+            self.avanzar()
+            dentro = self.expresion_booleana()
+            self.esperar(TipoToken.PARENTESIS, ")")
             return dentro
         raise ErrorSintactico(
             f"se esperaba un número, una variable o '(' y llegó '{t.valor}'",
@@ -149,7 +121,6 @@ class Parser:
             t.columna,
         )
 
-    # termino ::= factor (('*' | '/') factor)*
     def termino(self):
         izq = self.factor()
         while self.actual().tipo == TipoToken.OPERADOR and self.actual().valor in ("*", "/"):
@@ -158,7 +129,6 @@ class Parser:
             izq = OperacionBinaria(izq, operador, der)
         return izq
 
-    # expresion ::= termino (('+' | '-') termino)*
     def expresion(self):
         izq = self.termino()
         while self.actual().tipo == TipoToken.OPERADOR and self.actual().valor in ("+", "-"):
@@ -167,7 +137,6 @@ class Parser:
             izq = OperacionBinaria(izq, operador, der)
         return izq
 
-    # <declaracion_booleano> ::= "Q_booleano" <identificador> [ "=" <expresion_booleana> ]
     def declaracion_booleano(self):
         tipo = self.esperar(TipoToken.TIPO_BOOLEANO)
         nombre = self.esperar(TipoToken.IDENTIFICADOR)
@@ -177,7 +146,6 @@ class Parser:
             valor = self.expresion_booleana()
         return Declaracion(tipo, nombre, valor)
 
-    # <declaracion_texto> ::= "Q_texto" <identificador> [ "=" <expresion_texto> ]
     def declaracion_texto(self):
         tipo = self.esperar(TipoToken.TIPO_TEXTO)
         nombre = self.esperar(TipoToken.IDENTIFICADOR)
@@ -187,7 +155,6 @@ class Parser:
             valor = self.expresion_texto()
         return Declaracion(tipo, nombre, valor)
 
-    # <declaracion_numerico> ::= "Q_numerico" <identificador> [ "=" <expresion_numerica> ]
     def declaracion_numerico(self):
         tipo = self.esperar(TipoToken.TIPO_NUMERICO)
         nombre = self.esperar(TipoToken.IDENTIFICADOR)
@@ -197,7 +164,6 @@ class Parser:
             valor = self.expresion_numerica()
         return Declaracion(tipo, nombre, valor)
 
-    # <declaracion> ::= <declaracion_booleano> | <declaracion_texto> | <declaracion_numerico>
     def declaracion(self):
         t = self.actual()
         if t.tipo == TipoToken.TIPO_BOOLEANO:
@@ -230,7 +196,7 @@ class Parser:
                     t.columna,
                 )
             instrucciones.append(self.instruccion())
-        self.avanzar()  # '}'
+        self.avanzar() 
         return instrucciones
 
     def bloque_cuerpo(self, tok_referencia, tok_cierre_cabecera):
@@ -253,7 +219,7 @@ class Parser:
         if instrucciones:
             return instrucciones[0] if len(instrucciones) == 1 else instrucciones
 
-        # Si está en la misma línea (ej. SI x < 18 ENTONCES activar_incubadora)
+       
         return self.instruccion()
 
     def regla_si(self):
@@ -279,7 +245,6 @@ class Parser:
         val = self.expresion_texto()
         return Comentario(val)
 
-    # <bucle_clok> ::= "CLOK" <condicion> ":" <nueva_linea> <bloque_indentado>
     def bucle_clok(self):
         tok_clok = self.esperar(TipoToken.CONECTOR_CLOK)
         cond = self.expresion_booleana()
